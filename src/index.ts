@@ -34,15 +34,15 @@ const getAnnouncementByOrderStatus = (
 ): string => {
   switch (orderStatus) {
     case OrderStatus.RECEIVED:
-      return "https://github.com/sipgate-io/io-labs-telephone-status-request/blob/main/static/orderstatus_received.wav?raw=true";
+      return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/auth_error.wav?raw=true";
     case OrderStatus.PENDING:
-      return "https://github.com/sipgate-io/io-labs-telephone-status-request/blob/main/static/orderstatus_pending.wav?raw=true";
+      return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/fax_sent.wav?raw=true";
     case OrderStatus.FULLFILLED:
-      return "https://github.com/sipgate-io/io-labs-telephone-status-request/blob/main/static/orderstatus_fullfilled.wav?raw=true";
+      return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/invalid_id.wav?raw=true";
     case OrderStatus.CANCELED:
-      return "https://github.com/sipgate-io/io-labs-telephone-status-request/blob/main/static/orderstatus_canceled.wav?raw=true";
+      return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/pin_sent.wav?raw=true";
     default:
-      return "https://github.com/sipgate-io/io-labs-telephone-status-request/blob/main/static/error.wav?raw=true";
+      return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/error.wav?raw=true";
   }
 };
 
@@ -72,7 +72,7 @@ createDatabaseConnection().then(() => {
           maxDigits: MAX_CUSTOMERID_DTMF_INPUT_LENGTH,
           timeout: 5000,
           announcement:
-            "https://github.com/sipgate-io/io-labs-telephone-status-request/blob/main/static/request_customerid.wav?raw=true",
+            "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/request_customerid.wav?raw=true",
         });
       });
 
