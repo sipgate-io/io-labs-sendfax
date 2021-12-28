@@ -1,0 +1,54 @@
+{
+  "name": "io-labs-telephone-status-request",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node .",
+    "database:init": "ts-node ./node_modules/.bin/typeorm migration:run",
+    "database:purge": "ts-node ./node_modules/.bin/typeorm migration:revert",
+    "fix:lint": "eslint src --ext .ts,.js --fix",
+    "test:lint": "eslint src --ext .ts,.js",
+    "test:format": "prettier --check .",
+    "fix:format": "prettier --write .",
+    "prepare": "husky install",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/sipgate-io/io-labs-telephone-status-request.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sipgate-io/io-labs-telephone-status-request/issues"
+  },
+  "homepage": "https://github.com/sipgate-io/io-labs-telephone-status-request#readme",
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "@types/node": "^16.11.6",
+    "@typescript-eslint/eslint-plugin": "^5.3.1",
+    "@typescript-eslint/parser": "^5.3.1",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.25.2",
+    "husky": "^7.0.4",
+    "jest": "^27.3.1",
+    "lint-staged": "^11.2.6",
+    "prettier": "^2.4.1",
+    "ts-jest": "^27.0.7",
+    "typescript": "^4.4.4"
+  },
+  "lint-staged": {
+    "*.{ts,js}": "eslint --fix",
+    "*.{ts,js,css,md}": "prettier --write"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "mysql": "^2.18.1",
+    "reflect-metadata": "^0.1.13",
+    "sipgateio": "^2.5.6",
+    "ts-node": "^10.4.0",
+    "typeorm": "^0.2.41"
+  }
+}
