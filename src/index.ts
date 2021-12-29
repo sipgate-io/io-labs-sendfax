@@ -7,6 +7,7 @@ import {
 } from "typeorm";
 
 import Customer from "./entities/Customer";
+import { sendSmsPin } from "./utils/sendSms";
 
 enum SendFaxStatus {
   CUSTOMER_ID_INPUT,
@@ -36,6 +37,30 @@ if (!process.env.SIPGATE_WEBHOOK_SERVER_PORT) {
   process.exit();
 }
 
+if(!process.env.SIPGATE_TOKEN_ID) {
+  console.error(
+    "ERROR: You need to set a token to receive a sms!\n",
+  );
+  process.exit();
+}
+
+if(!process.env.SIPGATE_TOKEN) {
+  console.error(
+    "ERROR: You need to set a token to receive a sms!\n",
+  );
+  process.exit();
+}
+
+if(!process.env.SIPGATE_SMS_EXTENSION) {
+  console.error(
+    "ERROR: You need to set a token to receive a sms!\n",
+  );
+  process.exit();
+}
+
+const personalAccessTokenId = process.env.SIPGATE_TOKEN_ID || '';
+const personalAccessToken = process.env.SIPGATE_TOKEN || '';
+const smsExtension = process.env.SIPGATE_SMS_EXTENSION || '';
 const SERVER_ADDRESS = process.env.SIPGATE_WEBHOOK_SERVER_ADDRESS;
 const PORT = process.env.SIPGATE_WEBHOOK_SERVER_PORT;
 
@@ -76,13 +101,16 @@ const getAnnouncmentByCustomerPIN = async (
   customerId: string,
   pin: string,
   status: SendFaxStatus,
+  recipient: string,
 ): Promise<string> => {
   const customer = await getDatabaseRepository(Customer).findOne(customerId);
+  
   if (!customer) {
     console.log(`Customer with Id: ${customerId} not found...`);
     return getAnnouncementByOrderStatus(null);
   }
   if(customer.pin === Number(pin)){
+    sendSmsPin(personalAccessTokenId,personalAccessToken,recipient,pin,smsExtension)
     return getAnnouncementByOrderStatus(status);
   }
   return getAnnouncementByOrderStatus(null);
@@ -97,11 +125,12 @@ createDatabaseConnection().then(() => {
     })
     .then((webhookServer) => {
       console.log("Ready for new calls...");
-      const stage = new Map<string, SendFaxStatus>();
+      const stage = new Map<string, Object>();
 
       webhookServer.onNewCall((newCallEvent) => {
         console.log(`New call from ${newCallEvent.from} to ${newCallEvent.to}`);
-        stage.set(newCallEvent.callId, SendFaxStatus.CUSTOMER_ID_INPUT);
+        stage.set(newCallEvent.callId, {faxStatus: SendFaxStatus.CUSTOMER_ID_INPUT, recipient: newCallEvent.from, customerId: null});
+        
 
         return WebhookResponse.gatherDTMF({
           maxDigits: MAX_CUSTOMERID_DTMF_INPUT_LENGTH,
@@ -115,9 +144,16 @@ createDatabaseConnection().then(() => {
         const customerInput = dataEvent.dtmf;
         const callerId = dataEvent.callId;
         
-        if (customerInput.length === MAX_CUSTOMERID_DTMF_INPUT_LENGTH && stage.get(callerId) === SendFaxStatus.CUSTOMER_ID_INPUT) {
+        let callObject = Object(stage.get(callerId));
+        let recipient = callObject['recipient'];
+        let faxStatus = callObject['faxStatus'];
+        let customerId = callObject['customerId'];
+        
+        console.log(customerInput.length === MAX_CUSTOMERID_DTMF_INPUT_LENGTH )
+        console.log(faxStatus === SendFaxStatus.CUSTOMER_ID_INPUT)
+        if (customerInput.length === MAX_CUSTOMERID_DTMF_INPUT_LENGTH && faxStatus === SendFaxStatus.CUSTOMER_ID_INPUT) {
           console.log(`The caller provided a customer id: ${customerInput} `);
-          stage.set(callerId, SendFaxStatus.PIN_SENT);
+          stage.set(callerId, {faxStatus: SendFaxStatus.PIN_SENT, recipient: recipient, customerId: customerInput});
 
           return WebhookResponse.gatherDTMF({
             maxDigits: MAX_PIN_DTMF_INPUT_LENGTH,
@@ -126,14 +162,14 @@ createDatabaseConnection().then(() => {
           });
         }
 
-        if (customerInput.length === MAX_PIN_DTMF_INPUT_LENGTH && stage.get(callerId) === SendFaxStatus.PIN_SENT) {
+        if (customerInput.length === MAX_PIN_DTMF_INPUT_LENGTH && faxStatus === SendFaxStatus.PIN_SENT) {
           console.log(`The caller provided a pin: ${customerInput} `);
-          stage.set(callerId, SendFaxStatus.FAX_SENT);
+          stage.set(callerId, {faxStatus: SendFaxStatus.FAX_SENT, recipient: recipient, customerId: customerId});
 
           return WebhookResponse.gatherDTMF({
             maxDigits: 1,
             timeout: 0,
-            announcement: await getAnnouncmentByCustomerPIN(customerInput, customerInput, SendFaxStatus.PIN_SENT),
+            announcement: await getAnnouncmentByCustomerPIN(customerId, customerInput, SendFaxStatus.PIN_SENT, recipient),
           });
         }
 
