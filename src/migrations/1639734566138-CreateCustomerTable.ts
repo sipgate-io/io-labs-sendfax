@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table } from "typeorm";
 
-import Customer, { OrderStatus } from "../entities/Customer";
+import Customer from "../entities/Customer";
 
 export default class CreateCustomerTable1639734566138
   implements MigrationInterface {
@@ -13,7 +13,7 @@ export default class CreateCustomerTable1639734566138
         isPrimary: true,
       },
       {
-        name: "orderStatus",
+        name: "pin",
         type: "integer",
       },
     ],
@@ -25,23 +25,23 @@ export default class CreateCustomerTable1639734566138
     const customerData = [
       {
         id: 12345678,
-        orderStatus: OrderStatus.RECEIVED,
+        pin: 12345
       },
       {
         id: 87654321,
-        orderStatus: OrderStatus.PENDING,
+        pin: 11223
       },
       {
         id: 11111111,
-        orderStatus: OrderStatus.CANCELED,
+        pin: 32145
       },
       {
         id: 22222222,
-        orderStatus: OrderStatus.FULLFILLED,
+        pin: 45612
       },
       {
         id: 33333333,
-        orderStatus: OrderStatus.PENDING,
+        pin: 98745
       },
     ];
 
@@ -49,7 +49,7 @@ export default class CreateCustomerTable1639734566138
       customerData.map((data) => {
         const customer = new Customer();
         customer.id = data.id;
-        customer.orderStatus = data.orderStatus;
+        customer.pin = data.pin;
         return queryRunner.manager.save(customer);
       }),
     );
