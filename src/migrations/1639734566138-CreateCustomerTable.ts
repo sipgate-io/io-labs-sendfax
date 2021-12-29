@@ -3,7 +3,8 @@ import { MigrationInterface, QueryRunner, Table } from "typeorm";
 import Customer from "../entities/Customer";
 
 export default class CreateCustomerTable1639734566138
-  implements MigrationInterface {
+  implements MigrationInterface
+{
   private customerTable = new Table({
     name: "customer",
     columns: [
@@ -25,23 +26,23 @@ export default class CreateCustomerTable1639734566138
     const customerData = [
       {
         id: 12345678,
-        pin: 12345
+        pin: 12345,
       },
       {
         id: 87654321,
-        pin: 11223
+        pin: 11223,
       },
       {
         id: 11111111,
-        pin: 32145
+        pin: 32145,
       },
       {
         id: 22222222,
-        pin: 45612
+        pin: 45612,
       },
       {
         id: 33333333,
-        pin: 98745
+        pin: 98745,
       },
     ];
 
