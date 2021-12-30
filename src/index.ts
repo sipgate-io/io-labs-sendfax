@@ -21,7 +21,7 @@ enum SendFaxStatus {
 
 dotenv.config();
 
-const MAX_CUSTOMERID_DTMF_INPUT_LENGTH = 8;
+const CUSTOMERID_DTMF_INPUT_LENGTH = 8;
 const MAX_PIN_DTMF_INPUT_LENGTH = 5;
 
 if (!process.env.SIPGATE_WEBHOOK_SERVER_ADDRESS) {
@@ -39,7 +39,7 @@ if (!process.env.SIPGATE_WEBHOOK_SERVER_PORT) {
 }
 
 if (!process.env.SIPGATE_TOKEN_ID) {
-  console.error("ERROR: You need to set a token to receive a sms!\n");
+  console.error("ERROR: You need to set a token_id to receive a sms!\n");
   process.exit();
 }
 
@@ -49,17 +49,17 @@ if (!process.env.SIPGATE_TOKEN) {
 }
 
 if (!process.env.SIPGATE_SMS_EXTENSION) {
-  console.error("ERROR: You need to set a token to receive a sms!\n");
+  console.error("ERROR: You need to set a sms extension to receive a sms!\n");
   process.exit();
 }
 
 if (!process.env.SIPGATE_FAX_EXTENSION) {
-  console.error("ERROR: You need to set a token to receive a sms!\n");
+  console.error("ERROR: You need to set a fax_extension to receive a sms!\n");
   process.exit();
 }
 
 if (!process.env.SIPGATE_FAX_RECIPIENT) {
-  console.error("ERROR: You need to set a token to receive a sms!\n");
+  console.error("ERROR: You need to set a fax_recipient to receive a sms!\n");
   process.exit();
 }
 
@@ -150,7 +150,7 @@ createDatabaseConnection().then(() => {
         });
 
         return WebhookResponse.gatherDTMF({
-          maxDigits: MAX_CUSTOMERID_DTMF_INPUT_LENGTH,
+          maxDigits: CUSTOMERID_DTMF_INPUT_LENGTH,
           timeout: 5000,
           announcement:
             "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/request_customerid.wav?raw=true",
@@ -167,7 +167,7 @@ createDatabaseConnection().then(() => {
         let customerId = callObject["customerId"];
 
         if (
-          customerInput.length === MAX_CUSTOMERID_DTMF_INPUT_LENGTH &&
+          customerInput.length === CUSTOMERID_DTMF_INPUT_LENGTH &&
           faxStatus === SendFaxStatus.CUSTOMER_ID_INPUT
         ) {
           console.log(`The caller provided a customer id: ${customerInput} `);
