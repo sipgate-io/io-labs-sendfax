@@ -10,7 +10,7 @@ import Customer from "./entities/Customer";
 import { sendFaxPin } from "./utils/sendFax";
 import { sendSmsPin } from "./utils/sendSms";
 
-enum SendFaxStatus {
+enum Status {
   CUSTOMER_ID_INPUT,
   PIN_SENT,
   PIN_INPUT,
@@ -19,10 +19,16 @@ enum SendFaxStatus {
   INVALID_AUTH,
 }
 
+type FaxMetaData = {
+  faxStatus: Status;
+  recipient: string;
+  customerId: string;
+};
+
 dotenv.config();
 
 const CUSTOMERID_DTMF_INPUT_LENGTH = 8;
-const MAX_PIN_DTMF_INPUT_LENGTH = 5;
+const PIN_DTMF_INPUT_LENGTH = 5;
 
 if (!process.env.SIPGATE_WEBHOOK_SERVER_ADDRESS) {
   console.error(
@@ -72,21 +78,19 @@ const to = process.env.SIPGATE_FAX_RECIPIENT || "";
 const SERVER_ADDRESS = process.env.SIPGATE_WEBHOOK_SERVER_ADDRESS;
 const PORT = process.env.SIPGATE_WEBHOOK_SERVER_PORT;
 
-const getAnnouncementByOrderStatus = (
-  sendFaxStatus: SendFaxStatus | null,
-): string => {
+const getAnnouncementByOrderStatus = (sendFaxStatus: Status | null): string => {
   switch (sendFaxStatus) {
-    case SendFaxStatus.CUSTOMER_ID_INPUT:
+    case Status.CUSTOMER_ID_INPUT:
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/request_customerid.wav?raw=true";
-    case SendFaxStatus.PIN_SENT:
+    case Status.PIN_SENT:
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/pin_sent.wav?raw=true";
-    case SendFaxStatus.PIN_INPUT:
+    case Status.PIN_INPUT:
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/request_customerid.wav?raw=true";
-    case SendFaxStatus.FAX_SENT:
+    case Status.FAX_SENT:
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/fax_sent.wav?raw=true";
-    case SendFaxStatus.INVALID_ID:
+    case Status.INVALID_ID:
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/invalid_id.wav?raw=true";
-    case SendFaxStatus.INVALID_AUTH:
+    case Status.INVALID_AUTH:
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/auth_error.wav?raw=true";
     default:
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/error.wav?raw=true";
@@ -95,7 +99,7 @@ const getAnnouncementByOrderStatus = (
 
 const getAnnouncementByCustomerId = async (
   customerId: string,
-  status: SendFaxStatus,
+  status: Status,
   recipient: string,
 ): Promise<string> => {
   const customer = await getDatabaseRepository(Customer).findOne(customerId);
@@ -116,7 +120,7 @@ const getAnnouncementByCustomerId = async (
 const getAnnouncmentByCustomerPIN = async (
   customerId: string,
   pin: string,
-  status: SendFaxStatus,
+  status: Status,
 ): Promise<string> => {
   const customer = await getDatabaseRepository(Customer).findOne(customerId);
   if (!customer) {
@@ -139,14 +143,14 @@ createDatabaseConnection().then(() => {
     })
     .then((webhookServer) => {
       console.log("Ready for new calls...");
-      const stage = new Map<string, Object>();
+      const stage = new Map<string, FaxMetaData>();
 
       webhookServer.onNewCall((newCallEvent) => {
         console.log(`New call from ${newCallEvent.from} to ${newCallEvent.to}`);
         stage.set(newCallEvent.callId, {
-          faxStatus: SendFaxStatus.CUSTOMER_ID_INPUT,
+          faxStatus: Status.CUSTOMER_ID_INPUT,
           recipient: newCallEvent.from,
-          customerId: null,
+          customerId: "",
         });
 
         return WebhookResponse.gatherDTMF({
@@ -161,40 +165,40 @@ createDatabaseConnection().then(() => {
         const customerInput = dataEvent.dtmf;
         const callerId = dataEvent.callId;
 
-        let callObject = Object(stage.get(callerId));
-        let recipient = callObject["recipient"];
-        let faxStatus = callObject["faxStatus"];
-        let customerId = callObject["customerId"];
+        let FaxMetaData: FaxMetaData = <FaxMetaData>stage.get(callerId);
+        let faxStatus: Status = FaxMetaData.faxStatus;
+        let recipient: string = FaxMetaData.recipient;
+        let customerId: string = FaxMetaData.customerId;
 
         if (
           customerInput.length === CUSTOMERID_DTMF_INPUT_LENGTH &&
-          faxStatus === SendFaxStatus.CUSTOMER_ID_INPUT
+          faxStatus === Status.CUSTOMER_ID_INPUT
         ) {
           console.log(`The caller provided a customer id: ${customerInput} `);
           stage.set(callerId, {
-            faxStatus: SendFaxStatus.PIN_SENT,
+            faxStatus: Status.PIN_SENT,
             recipient: recipient,
             customerId: customerInput,
           });
 
           return WebhookResponse.gatherDTMF({
-            maxDigits: MAX_PIN_DTMF_INPUT_LENGTH,
+            maxDigits: PIN_DTMF_INPUT_LENGTH,
             timeout: 5000,
             announcement: await getAnnouncementByCustomerId(
               customerInput,
-              SendFaxStatus.PIN_INPUT,
+              Status.PIN_INPUT,
               recipient,
             ),
           });
         }
 
         if (
-          customerInput.length === MAX_PIN_DTMF_INPUT_LENGTH &&
-          faxStatus === SendFaxStatus.PIN_SENT
+          customerInput.length === PIN_DTMF_INPUT_LENGTH &&
+          faxStatus === Status.PIN_SENT
         ) {
           console.log(`The caller provided a pin: ${customerInput} `);
           stage.set(callerId, {
-            faxStatus: SendFaxStatus.FAX_SENT,
+            faxStatus: Status.FAX_SENT,
             recipient: recipient,
             customerId: customerId,
           });
@@ -205,7 +209,7 @@ createDatabaseConnection().then(() => {
             announcement: await getAnnouncmentByCustomerPIN(
               customerId,
               customerInput,
-              SendFaxStatus.FAX_SENT,
+              Status.FAX_SENT,
             ),
           });
         }
