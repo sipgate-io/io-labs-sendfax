@@ -53,7 +53,7 @@ SIPGATE_WEBHOOK_SERVER_PORT=8080
 5. In your .env file you should set: `DATABASE_USER`, `DATABASE_PASSWORD` and `DATABASE_ROOT_PASSWORD` to values of your choice.
 6. Go to your [sipgate app-web account](https://console.sipgate.com/webhooks/urls) and set both the incoming and outgoing webhook URLs as the URL from step 2.
 7. The service also needs a valid Token for it to send SMS.
-   Navigate to your [personal access token settings](https://app.sipgate.com/w0/personal-access-token) and create a token that has both the `sessions:sms:write` and the `sessions:fax:write` scopes. (Or, alternatively, create a token that has all scopes.)
+   Navigate to your [personal access token settings](https://app.sipgate.com/w0/personal-access-token) and create a token that has the `sessions:sms:write`, `sessions:fax:write` and `history:read` scopes. (Or, alternatively, create a token that has all scopes.)
    Copy the Token that is displayed and paste it into .env-variable `SIPGATE_TOKEN`.
    Close the dialogbox and copy the corresponding TokenID in the Personal-Access-Token-List into the .env-variable `SIPGATE_TOKEN_ID`.
 8. Web SMS Extensions
