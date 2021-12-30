@@ -165,10 +165,10 @@ createDatabaseConnection().then(() => {
         const customerInput = dataEvent.dtmf;
         const callerId = dataEvent.callId;
 
-        let FaxMetaData: FaxMetaData = <FaxMetaData>stage.get(callerId);
-        let faxStatus: Status = FaxMetaData.faxStatus;
-        let recipient: string = FaxMetaData.recipient;
-        let customerId: string = FaxMetaData.customerId;
+        const FaxMetaData: FaxMetaData = <FaxMetaData>stage.get(callerId);
+        const faxStatus: Status = FaxMetaData.faxStatus;
+        const recipient: string = FaxMetaData.recipient;
+        const customerId: string = FaxMetaData.customerId;
 
         if (
           customerInput.length === CUSTOMERID_DTMF_INPUT_LENGTH &&

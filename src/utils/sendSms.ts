@@ -14,7 +14,7 @@ export const sendSmsPin = (
     token: personalAccessToken,
   });
 
-  const message = `Your Pin is: ${pin}`;
+  const message: string = `Your Pin is: ${pin}`;
 
   const shortMessage = {
     message,

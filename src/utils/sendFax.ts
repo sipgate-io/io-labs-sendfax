@@ -15,9 +15,9 @@ export const sendFaxPin = async (
     token: personalAccessToken,
   });
 
-  const filePath = "./src/utils/testpage.pdf";
+  const filePath: string = "./src/utils/testpage.pdf";
   const { name: filename } = path.parse(path.basename(filePath));
-  const fileContent = fs.readFileSync(filePath);
+  const fileContent: Buffer = fs.readFileSync(filePath);
 
   const fax = createFaxModule(client);
 
