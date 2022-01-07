@@ -13,7 +13,6 @@ import { sendSmsPin } from "./utils/sendSms";
 enum Status {
   CUSTOMER_ID_INPUT,
   PIN_SENT,
-  PIN_INPUT,
   FAX_SENT,
   INVALID_ID,
   INVALID_AUTH,
@@ -84,8 +83,6 @@ const getAnnouncementByOrderStatus = (sendFaxStatus: Status | null): string => {
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/request_customerid.wav?raw=true";
     case Status.PIN_SENT:
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/pin_sent.wav?raw=true";
-    case Status.PIN_INPUT:
-      return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/request_customerid.wav?raw=true";
     case Status.FAX_SENT:
       return "https://github.com/sipgate-io/io-labs-sendfax/blob/main/static/fax_sent.wav?raw=true";
     case Status.INVALID_ID:
@@ -186,7 +183,7 @@ createDatabaseConnection().then(() => {
             timeout: 5000,
             announcement: await getAnnouncementByCustomerId(
               customerInput,
-              Status.PIN_INPUT,
+              Status.PIN_SENT,
               recipient,
             ),
           });
