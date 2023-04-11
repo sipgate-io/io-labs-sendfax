@@ -49,6 +49,6 @@
     "reflect-metadata": "^0.1.13",
     "sipgateio": "^2.5.6",
     "ts-node": "^10.4.0",
-    "typeorm": "^0.2.41"
+    "typeorm": "^0.3.14"
   }
 }
